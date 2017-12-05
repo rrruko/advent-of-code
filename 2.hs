@@ -1,3 +1,6 @@
+#!/usr/bin/env stack
+-- stack --resolver lts-9.14 script
+
 checksum :: [[Int]] -> Int
 checksum spreadsheet = sum $ map (diff . minmax) spreadsheet
     where minmax xs = (minimum xs, maximum xs)

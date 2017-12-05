@@ -7,10 +7,9 @@
     (lambda (row) (map string->number row))
     string-matrix))
 
-(define (diff x y)
-  (abs (- x y)))
-
 (define (checksum spreadsheet)
+  (define (diff x y)
+    (abs (- x y)))
   (apply +
     (map
       (lambda (row) (diff (apply min row) (apply max row)))
@@ -27,7 +26,7 @@
       (filter
         (lambda (pair)
           (and (apply > pair)
-          (= 0 (apply modulo pair))))
+               (= 0 (apply modulo pair))))
         (cartesian-product row)))))
   (apply +
     (map

@@ -1,3 +1,6 @@
+#!/usr/bin/env racket
+#lang racket
+
 (define (to-spreadsheet filepath)
   (define string-matrix
     (map
@@ -37,3 +40,5 @@
   (define spreadsheet (to-spreadsheet "2.txt"))
   (writeln (checksum spreadsheet))
   (writeln (checksum2 spreadsheet)))
+
+(main)

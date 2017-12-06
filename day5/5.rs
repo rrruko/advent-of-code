@@ -4,7 +4,7 @@ use std::io::prelude::*;
 fn main() {
     // A lot of unwrapping follows because I really just want an exception if 
     // parsing fails
-    let mut file = File::open("input5").unwrap();
+    let mut file = File::open("5.txt").unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
     let lines: Vec<i32> = contents

@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::prelude::*;
 
 fn main() {
-    let mut file = File::open("input").unwrap();
+    let mut file = File::open("6.txt").unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
     let mut ns: Vec<i32> = contents
@@ -13,7 +13,7 @@ fn main() {
         .collect();
     println!("Part 1: {}", redistribute(&mut ns));
     println!("Part 2: {}", redistribute(&mut ns));
- }
+}
 
 fn redistribute(ns: &mut Vec<i32>) -> u32 {
     let mut history: Vec<Vec<i32>> = Vec::new();

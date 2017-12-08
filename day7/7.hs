@@ -46,15 +46,16 @@ totalWeight (Program _ n []) = n
 totalWeight (Program _ n programs) = n + sum (map totalWeight programs)
 
 -- Find a program in the program tree that has a different total weight from its
--- siblings. We also return the weight of its siblings.
-findUnbalanced :: Program -> (Weight, Maybe Program)
-findUnbalanced = go 0
+-- siblings. We keep track of the parent so that we can get the weights of the
+-- siblings later.
+findUnbalanced :: Program -> (Program, Maybe Program)
+findUnbalanced program = go program program
     where
-        go sibWeight      (Program _ _ [])       = (sibWeight, Nothing)
-        go sibWeight this@(Program _ _ programs) =
+        go parent (Program _ _ []) = (parent, Nothing)
+        go parent this@(Program _ _ programs) =
             case misfitBy totalWeight programs of
-                Nothing     -> (sibWeight, Just this)
-                Just (x,xs) -> go (mode $ map totalWeight xs) x
+                Nothing -> (parent, Just this)
+                Just (misfit, _) -> go this misfit
 
 -- The smallest element that is not equal to any other.
 -- If there isn't one, return Nothing.
@@ -97,7 +98,9 @@ part2 str =
     let Just bottomLine = findLine (lines str) (part1 str)
         -- ^ Part 1 finds the name of the program at the bottom of the tree
         stack = readProgram (lines str) bottomLine
-        (siblingsTotalWeight, Just unbalanced) = findUnbalanced stack
+        (parent, Just unbalanced) = findUnbalanced stack
         -- ^ Find the one program that is the wrong weight and its parent
         currWeight = getWeight unbalanced
+        siblings = getChildren parent
+        siblingsTotalWeight = mode $ map totalWeight siblings
     in  show $ currWeight - (totalWeight unbalanced - siblingsTotalWeight)

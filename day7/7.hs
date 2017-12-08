@@ -1,13 +1,13 @@
 #!/bin/env stack
 -- stack script --resolver lts-9.17
 
-import Control.Arrow ((&&&))
 import Data.Char (isAlpha)
 import Data.Function (on)
 import Data.List
-import Data.Maybe (catMaybes, fromJust, isJust)
+import Data.Maybe (catMaybes)
 import GHC.Exts (the)
 
+main :: IO ()
 main = do
     file <- readFile "7.txt"
     putStrLn $ part1 file
@@ -15,12 +15,13 @@ main = do
 
 type Name = String
 type Weight = Int
-data Program = Program Name Weight [Program] deriving Show
--- ^ A program has a name, a weight, and some programs stacked on top of it
 
-getName (Program name _ _) = name
-getWeight (Program _ weight _)  = weight
-getChildren (Program _ _ children) = children
+-- A program has a name, a weight, and some programs stacked on top of it
+data Program = Program {
+    getName :: Name,
+    getWeight :: Weight,
+    getChildren :: [Program]
+} deriving Show
 
 -- Create a full program tree given the lines and the root
 readProgram :: [String] -> String -> Program
@@ -45,24 +46,31 @@ totalWeight (Program _ n []) = n
 totalWeight (Program _ n programs) = n + sum (map totalWeight programs)
 
 -- Find a program in the program tree that has a different total weight from its
--- siblings. We keep track of the parent so that we can get the weights of the
--- siblings later. (TODO: Maybe just return the total weights of the siblings here,
--- instead of the parent?)
-findUnbalanced :: Program -> (Program, Maybe Program)
-findUnbalanced program = go program program
+-- siblings. We also return the weight of its siblings.
+findUnbalanced :: Program -> (Weight, Maybe Program)
+findUnbalanced = go 0
     where
-        go parent (Program _ _ []) = (parent, Nothing)
-        go parent this@(Program _ _ programs) =
-            case findDifferentBy totalWeight programs of
-                Nothing   -> (parent, Just this)
-                Just diff -> go this diff
+        go sibWeight      (Program _ _ [])       = (sibWeight, Nothing)
+        go sibWeight this@(Program _ _ programs) =
+            case misfitBy totalWeight programs of
+                Nothing     -> (sibWeight, Just this)
+                Just (x,xs) -> go (mode $ map totalWeight xs) x
 
--- An element of a list that is different from every other element
-findDifferentBy :: Ord b => (a -> b) -> [a] -> Maybe a
-findDifferentBy f = fmap head
-    . find (\x -> length x == 1)
-    . groupBy ((==) `on` f)
-    . sortOn f
+-- The smallest element that is not equal to any other.
+-- If there isn't one, return Nothing.
+-- If there are many, return the smallest.
+misfitBy :: (Eq b, Ord b) => (a -> b) -> [a] -> Maybe (a, [a])
+misfitBy f xs
+    | allEqual (map f xs) = Nothing
+    | otherwise = uncons
+        . concat
+        . sortOn length
+        . groupBy ((==) `on` f)
+        $ sortOn f xs
+
+allEqual :: Eq a => [a] -> Bool
+allEqual [] = True
+allEqual (x:xs) = all (== x) xs
 
 -- The statistical mode of a list
 mode :: Ord a => [a] -> a
@@ -89,9 +97,7 @@ part2 str =
     let Just bottomLine = findLine (lines str) (part1 str)
         -- ^ Part 1 finds the name of the program at the bottom of the tree
         stack = readProgram (lines str) bottomLine
-        (parent, Just unbalanced) = findUnbalanced stack
+        (siblingsTotalWeight, Just unbalanced) = findUnbalanced stack
         -- ^ Find the one program that is the wrong weight and its parent
         currWeight = getWeight unbalanced
-        siblings = getChildren parent
-        siblingsTotalWeight = mode $ map totalWeight siblings
     in  show $ currWeight - (totalWeight unbalanced - siblingsTotalWeight)

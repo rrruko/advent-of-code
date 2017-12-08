@@ -4,7 +4,7 @@
 import Data.Char (isAlpha)
 import Data.Function (on)
 import Data.List
-import Data.Maybe (catMaybes)
+import Data.Maybe (mapMaybe)
 import GHC.Exts (the)
 
 main :: IO ()
@@ -25,15 +25,14 @@ data Program = Program {
 
 -- Create a full program tree given the lines and the root
 readProgram :: [String] -> String -> Program
-readProgram all this =
+readProgram allLines this =
     case words this of
         [name, weight] -> Program name (read weight) []
         (name:weight:rest) ->
-            let rest' = map (filter isAlpha) rest
-            in  Program
-                    name
-                    (read weight)
-                    (map (readProgram all) . catMaybes $ map (findLine all) rest')
+            let childNames = map (filter isAlpha) rest
+                childLines = mapMaybe (findLine allLines) childNames
+                children = map (readProgram allLines) childLines
+            in  Program name (read weight) children
 
 -- We can't write this using isPrefixOf because some program names are prefixes
 -- of others

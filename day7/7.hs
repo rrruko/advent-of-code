@@ -13,13 +13,10 @@ main = do
     putStrLn $ part1 file
     putStrLn $ part2 file
 
-type Name = String
-type Weight = Int
-
 -- A program has a name, a weight, and some programs stacked on top of it
 data Program = Program {
-    getName :: Name,
-    getWeight :: Weight,
+    getName :: String,
+    getWeight :: Int,
     getChildren :: [Program]
 } deriving Show
 
@@ -33,6 +30,7 @@ readProgram allLines this =
                 childLines = mapMaybe (findLine allLines) childNames
                 children = map (readProgram allLines) childLines
             in  Program name (read weight) children
+        _ -> error "A line input to readProgram had less than 2 words"
 
 -- We can't write this using isPrefixOf because some program names are prefixes
 -- of others
@@ -40,7 +38,7 @@ findLine :: [String] -> String -> Maybe String
 findLine context prefix = find ((prefix ==) . head . words) context
 
 -- The weight of a program plus those of all programs above it
-totalWeight :: Program -> Weight
+totalWeight :: Program -> Int
 totalWeight (Program _ n []) = n
 totalWeight (Program _ n programs) = n + sum (map totalWeight programs)
 
@@ -81,22 +79,22 @@ mode = head
 
 -- The name of the program at the bottom
 part1 :: String -> String
-part1 str =
-    let programNames = head . words <$> lines str
+part1 file =
+    let programNames = head . words <$> lines file
         -- ^ The first word of each line
-        rhs = map (filter isAlpha) . tail . words <$> lines str
+        childNames = map (filter isAlpha) . tail . words <$> lines file
         -- ^ The rest of each line, describing the programs on top
-        isBottom str = all (notElem str) rhs
+        isBottom line = all (notElem line) childNames
         -- ^ A program is the bottom if it isn't on top of anything
     in  the $ filter isBottom programNames
         -- ^ There should be exactly one program that isBottom
 
 -- The weight that one program needs to be changed to to balance the tree
 part2 :: String -> String
-part2 str =
-    let Just bottomLine = findLine (lines str) (part1 str)
+part2 file =
+    let Just bottomLine = findLine (lines file) (part1 file)
         -- ^ Part 1 finds the name of the program at the bottom of the tree
-        stack = readProgram (lines str) bottomLine
+        stack = readProgram (lines file) bottomLine
         (parent, Just unbalanced) = findUnbalanced stack
         -- ^ Find the one program that is the wrong weight and its parent
         currWeight = getWeight unbalanced

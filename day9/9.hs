@@ -10,7 +10,8 @@ applyBangs str = go ("", str)
         go (l, []) = reverse l
         go (l, r) = go (head r:l, tail r)
 
--- Traverse a string, removing garbage.
+-- Return a string with all the garbage removed. This doesn't take into account
+-- canceled characters, so it should only be used on a result of applyBangs.
 cleanGarbage :: String -> String
 cleanGarbage str = go ("", str)
     where
@@ -19,8 +20,8 @@ cleanGarbage str = go ("", str)
         go (l, '<':_:tl) = go (l, '<':tl)
         go (l, c:tl) = go (c:l, tl)
 
--- Traverse a string, removing garbage, and counting every garbage character
--- removed.
+-- Traverse a string, removing garbage, and return the number of garbage
+-- characters removed. This doesn't take into account canceled characters.
 countingClean :: String -> Int
 countingClean str = go 0 ("", str)
     where

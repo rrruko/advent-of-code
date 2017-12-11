@@ -22,6 +22,6 @@ main = do
     file <- readFile "11.txt"
     let moves = filter (all isAlpha) $ splitOn "," file
         disps = map toDisp moves
-        ans = scanl' add (0, 0) disps
-    putStrLn $ "Part 1: " ++ show (taxi $ last ans)
-    putStrLn $ "Part 2: " ++ show (maximum $ map taxi ans)
+        ans = taxi <$> scanl' add (0, 0) disps
+    putStrLn $ "Part 1: " ++ show (last ans)
+    putStrLn $ "Part 2: " ++ show (maximum ans)

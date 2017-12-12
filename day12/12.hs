@@ -1,5 +1,5 @@
 import Data.List ((\\))
-import Data.Map ((!), Map)
+import Data.Map ((!), Map, difference, fromSet)
 import qualified Data.Map as M
 import Data.Semigroup
 import Data.Set (Set, empty, fromList, toList, singleton)
@@ -30,13 +30,14 @@ getNeighbors graph visited v =
     in  S.unions $ singleton v : map (getNeighbors graph newVisited) neighbors
 
 countGroups :: Map Int [Int] -> Int
-countGroups graph = go graph 0
-    where go graph count
-              | M.null graph = count
-              | otherwise =
-                  let arbitrary = fst . head $ M.toList graph
-                      group = getNeighbors graph empty arbitrary
-                  in  go (graph `M.difference` setToMap group) (count + 1)
+countGroups graph =
+    let go graph count
+            | M.null graph = count
+            | otherwise =
+                let arbitrary = fst . head $ M.toList graph
+                    group = getNeighbors graph empty arbitrary
+                in  go (graph `difference` setToMap group) (count + 1)
+    in go graph 0
 
 setToMap :: Set Int -> Map Int ()
-setToMap = M.fromSet (const ())
+setToMap = fromSet (const ())

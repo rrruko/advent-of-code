@@ -35,7 +35,5 @@ main = do
 part1 :: [Layer] -> Int
 part1 layers = scoreTrip layers 0
 
--- It's okay to use fromJust here because find never returns Nothing on an
--- infinite list
 part2 :: [Layer] -> Int
 part2 layers = fromJust $ find (safeTrip layers) [0..]

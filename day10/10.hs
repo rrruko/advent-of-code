@@ -22,8 +22,10 @@ data State = State {
     pos :: Int
 } deriving Show
 
+getKnot :: State -> [Int]
 getKnot (State k s p) = k
 
+def :: State
 def = State [0..255] 0 0
 
 part1 :: [Int] -> State -> State

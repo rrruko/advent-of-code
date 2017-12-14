@@ -20,7 +20,7 @@ data State = State {
     knot :: [Int],
     skipSize :: Int,
     pos :: Int
-}
+} deriving Show
 
 getKnot (State k s p) = k
 
@@ -37,7 +37,8 @@ part2 lengths initKnot =
         sparseHash = getKnot $ iterate (part1 lengths') initKnot !! 64
         foldXor = foldr xor 0
         denseHash = map foldXor $ chunksOf 16 sparseHash
-    in  concat [showHex x "" | x <- denseHash]
+        pad len c str = replicate (len - length str) c ++ str
+    in  concat [pad 2 '0' $ showHex x "" | x <- denseHash]
 
 main :: IO ()
 main = do

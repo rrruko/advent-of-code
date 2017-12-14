@@ -1,3 +1,14 @@
+module Day10
+    ( def
+    , getKnot
+    , pad
+    , part1
+    , part2
+    , rev
+    , reverseUpTo
+    , shift
+    ) where
+
 import Data.Bits (xor)
 import Data.Char (isSpace, ord)
 import Data.List (foldl')
@@ -41,8 +52,10 @@ part2 lengths initKnot =
         sparseHash = getKnot $ iterate (part1 lengths') initKnot !! 64
         foldXor = foldr xor 0
         denseHash = map foldXor $ chunksOf 16 sparseHash
-        pad len c str = replicate (len - length str) c ++ str
     in  concat [pad 2 '0' $ showHex x "" | x <- denseHash]
+
+pad :: Int -> Char -> String -> String
+pad len c str = replicate (len - length str) c ++ str
 
 main :: IO ()
 main = do

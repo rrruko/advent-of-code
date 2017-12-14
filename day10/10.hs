@@ -24,6 +24,8 @@ data State = State {
 
 getKnot (State k s p) = k
 
+def = State [0..255] 0 0
+
 part1 :: [Int] -> State -> State
 part1 lengths initState = foldl' 
     (\(State knot skipSize pos) len -> let r = rev pos len knot in r `seq`
@@ -44,5 +46,5 @@ main :: IO ()
 main = do
     file <- filter (not . isSpace) <$> readFile "10.txt"
     let lengths = read $ "[" ++ file ++ "]"
-    print . (\x -> x!!0 * x!!1) . getKnot $ part1 lengths (State [0..255] 0 0)
-    putStrLn $ part2 file (State [0..255] 0 0)
+    print . (\x -> x!!0 * x!!1) . getKnot $ part1 lengths def
+    putStrLn $ part2 file def

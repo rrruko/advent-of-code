@@ -13,44 +13,21 @@ parseLine line =
            Just (cast . pack . fromMaybe ['0'] . init' $ depth, cast $ pack range)
        _ => Nothing
 
-{-
-lem1 : (LTE 2 n) -> Not (2 * minus n 1 = 0)
-lem1 (LTESucc 2 n) = 
-    let onelessthannminus1 = lteSuccLeft 
-    in  ?whatnowfucker 
--}
-
-ltToNeq : LTE (S n) m -> Not (m = 0)
-ltToNeq prf =
-    let LTESucc (S n) (S m) = lteSuccRight prf
-    in  lemma3 (S m)
-
-lemma1 : LTE 2 n -> Not (minus n 1 = 0)
-lemma1 = ?gjfkgjd
-
-lemma2 : LTE (S n) m -> LTE (S n) (S m)
-lemma2 = lteSuccRight
-
-lemma3 : m = (S x) -> (m = 0) -> Void
-lemma3 = absurd trans
-
--- thm2 : (
-
 -- Whether you will be caught by the layer if you wait `delay` picoseconds
-caught : Nat -> (Nat, Nat) -> Bool
+-- FIXME: don't use believe_me. Need a proof that LTE 2 range -> Not (rhs = 0)
+caught : Nat -> Layer -> Bool
 caught delay (depth, range) =
     case 2 `isLTE` range of
         Yes prf => 
-            let rhs = minus range 1 + minus range 1
-            in  modNatNZ (depth + delay) rhs (lemma3 ?hell) == 0
+            let rhs = 2 * minus range 1
+            in  modNatNZ (depth + delay) rhs believe_me == 0
         No  con => True
 
 severity : Layer -> Nat
 severity (depth, range) = depth * range
 
 scoreTrip : List Layer -> Nat -> Nat
-scoreTrip layers delay =
-    sum . map severity . filter (not . caught delay) $ layers
+scoreTrip layers delay = sum . map severity $ filter (caught delay) layers
 
 safeTrip : List Layer -> Nat -> Bool
 safeTrip layers delay = all (not . caught delay) layers
@@ -58,14 +35,25 @@ safeTrip layers delay = all (not . caught delay) layers
 part1 : List Layer -> Nat
 part1 layers = scoreTrip layers 0
 
+-- FIXME: Big Nats overflow the stack, so we can't go high enough to solve
+-- part2. Also this should ideally terminate in a better way than quitting at
+-- an arbitrary N.
+partial
 part2 : List Layer -> Maybe Nat
-part2 layers = find (safeTrip layers) [0 .. 10000000]
-
+part2 layers = go (the Nat 1000)
+    where go n =
+              if safeTrip layers n then
+                  Just n
+              else if n <= 0 then
+                  Nothing
+              else
+                  go (minus n 1)
+partial
 main : IO ()
 main = do
     file <- readFile "13.txt"
     case file of
-         Left  err => print "whoops"
+         Left  err => putStrLn "File not found"
          Right res => do
              let layers = mapMaybe parseLine $ lines res
              putStrLn $ "Part 1: " <+> show (part1 layers)

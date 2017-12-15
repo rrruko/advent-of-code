@@ -1,3 +1,6 @@
+#!/usr/bin/env stack
+-- stack --resolver lts-9.14 script --package hspec --package split
+
 module Day14
     (answer
     ) where
@@ -15,4 +18,8 @@ showHash :: String -> String
 showHash str = part2 str def >>= (pad 4 '.' . hexToBin . pure)
 
 answer :: String -> String
-answer str = intercalate "\n" $ map (showHash . (str ++) . show) [0..127]
+answer str = intercalate "\n" $ map (showHash . ((str ++ "-") ++) . show) [0..127]
+
+main :: IO ()
+main = do
+    print . length . filter (=='#') $ answer "hfdlxzhv"

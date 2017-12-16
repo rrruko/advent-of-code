@@ -28,15 +28,17 @@ partner a b str =
 
 type Parser = Parsec () String
 
+int :: Parser Int
+int = read <$> many digitChar
+
 parseExpr :: Parser Permutation
 parseExpr = foldr1 (flip (.)) <$> many (parseSpin <|> parseExchange <|> parsePartner)
 
 parseSpin :: Parser Permutation
-parseSpin = char 's' *> (spin . read <$> many digitChar)
-   
+parseSpin = char 's' *> (spin <$> int)
+
 parseExchange :: Parser Permutation
 parseExchange = char 'x' *> (exchange <$> int <*> (char '/' *> int))
-    where int = read <$> many digitChar
 
 parsePartner :: Parser Permutation
 parsePartner = char 'p' *> (partner <$> lowerChar <*> (char '/' *> lowerChar))

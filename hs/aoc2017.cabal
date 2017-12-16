@@ -12,6 +12,7 @@ library
   exposed-modules:     Day10, Day14
   build-depends:       base >= 4.7 && < 5
                      , split
+                     , vector
   default-language:    Haskell2010
 
 executable aoc

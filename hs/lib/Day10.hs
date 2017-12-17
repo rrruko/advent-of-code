@@ -1,6 +1,7 @@
 module Day10
     ( def
     , getKnot
+    , main
     , pad
     , part1
     , part2
@@ -17,16 +18,15 @@ import Numeric (showHex)
 
 shift :: Int -> [a] -> [a]
 shift n xs
-    | n > 0 = let y = (last xs : init xs)    in last y `seq` shift (n-1) y
-    | n < 0 = let y = (tail xs ++ [head xs]) in shift (n+1) y
-    | otherwise = xs
+    | n < 0     = shift (length xs + n) xs
+    | otherwise = zipWith const (drop n (cycle xs)) xs
 
 reverseUpTo :: Int -> [a] -> [a]
 reverseUpTo len xs = reverse (take len xs) ++ drop len xs
 
 rev :: Int -> Int -> [a] -> [a]
-rev index len = shift index . reverseUpTo len . shift (-index)
- 
+rev index len = shift (-index) . reverseUpTo len . shift index
+
 data State = State {
     knot :: [Int],
     skipSize :: Int,

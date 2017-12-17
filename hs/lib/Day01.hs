@@ -1,7 +1,9 @@
 #!/usr/bin/env stack
 -- stack --resolver lts-9.14 script --package hspec
 
-module Day01 where
+module Day01 (
+    main
+    ) where
 
 import Control.Monad (guard)
 import Data.Char

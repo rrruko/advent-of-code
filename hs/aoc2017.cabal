@@ -9,9 +9,14 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      lib
-  exposed-modules:     Day10, Day14
+  exposed-modules:     Day01, Day10, Day14, Day16, Day17
   build-depends:       base >= 4.7 && < 5
+                     , containers
+                     , deepseq
+                     , hspec
+                     , megaparsec
                      , split
+                     , vector
   default-language:    Haskell2010
 
 executable aoc

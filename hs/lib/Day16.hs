@@ -1,10 +1,13 @@
-module Day16 where
+module Day16 (
+    main
+    ) where
 
 import Data.Semigroup
 import Data.Vector ((!), (//), Vector)
 import qualified Data.Vector as V
 import Data.Void
 import Text.Megaparsec
+import Text.Megaparsec.Char
 
 type Permutation = Vector Char -> Vector Char
 
@@ -26,7 +29,7 @@ partner a b str =
         Just m = V.elemIndex b str
     in  str // [(m, a), (n, b)]
 
-type Parser = Parsec () String
+type Parser = Parsec Void String
 
 int :: Parser Int
 int = read <$> many digitChar
@@ -53,8 +56,8 @@ main = do
     let ini = V.fromList "abcdefghijklmnop"
     case parseMaybe parseExpr file of
         Just f -> do
-            putStrLn $ "Part 1: " <> V.fromList (part1 f ini)
-            putStrLn $ "Part 2: " <> V.fromList (part2 f ini)
+            putStrLn $ "Part 1: " <> V.toList (part1 f ini)
+            putStrLn $ "Part 2: " <> V.toList (part2 f ini)
         Nothing -> putStrLn "Parse failed"
 
 -- For part 1, we just need to apply the permutations to the initial string.

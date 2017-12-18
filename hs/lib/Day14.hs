@@ -2,17 +2,13 @@
 -- stack --resolver lts-9.14 script --package hspec --package split
 
 module Day14
-    (answer
+    (main
     ) where
 
 import Day10 (def, pad)
 import qualified Day10
 
 import Data.Bool (bool)
-import Data.List (intercalate)
-import Data.List.Split (chunksOf)
-import Data.Map (Map)
-import qualified Data.Map as M
 import Data.Vector ((!), (//), Vector)
 import qualified Data.Vector as V
 import Numeric

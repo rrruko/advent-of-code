@@ -1,3 +1,8 @@
+module Day12 (
+    getNeighbors,
+    countGroups
+    ) where
+
 import Data.List ((\\))
 import Data.Map ((!), Map, difference, fromSet)
 import qualified Data.Map as M
@@ -23,13 +28,13 @@ part1 graph = S.size $ getNeighbors graph empty 0
 part2 :: Map Int [Int] -> Int
 part2 = countGroups
 
-getNeighbors :: Map Int [Int] -> Set Int -> Int -> Set Int
+getNeighbors :: (Eq a, Ord a) => Map a [a] -> Set a -> a -> Set a
 getNeighbors graph visited v =
     let neighbors = (graph ! v) \\ toList visited
         newVisited = visited <> fromList neighbors
     in  S.unions $ singleton v : map (getNeighbors graph newVisited) neighbors
 
-countGroups :: Map Int [Int] -> Int
+countGroups :: Ord a => Map a [a] -> Int
 countGroups graph =
     let go graph count
             | M.null graph = count
@@ -39,5 +44,5 @@ countGroups graph =
                 in  go (graph `difference` setToMap group) (count + 1)
     in go graph 0
 
-setToMap :: Set Int -> Map Int ()
+setToMap :: Set a -> Map a ()
 setToMap = fromSet (const ())

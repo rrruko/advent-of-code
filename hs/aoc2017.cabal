@@ -14,7 +14,7 @@ library
                      , containers
                      , deepseq
                      , hspec
-                     , megaparsec
+                     , megaparsec >= 6.3 && < 6.4
                      , split
                      , text
                      , vector

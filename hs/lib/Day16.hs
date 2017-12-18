@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Day16 (
     main
     ) where
@@ -38,21 +40,22 @@ int = read <$> many digitChar
 -- compose all the results.
 parseExpr :: Parser Permutation
 parseExpr = foldr1 (flip (.)) <$> 
-    many (parseSpin <|> parseExchange <|> parsePartner)
+    (many ((parseSpin <|> parseExchange <|> parsePartner) 
+          <* optional ",") <* optional "\n")
 
 parseSpin :: Parser Permutation
-parseSpin = char 's' *> (spin <$> int)
+parseSpin = "s" *> (spin <$> int)
 
 parseExchange :: Parser Permutation
-parseExchange = char 'x' *> (exchange <$> int <*> (char '/' *> int))
+parseExchange = "x" *> (exchange <$> int <*> ("/" *> int))
 
 parsePartner :: Parser Permutation
-parsePartner = char 'p' *> (partner <$> lowerChar <*> (char '/' *> lowerChar))
+parsePartner = "p" *> (partner <$> lowerChar <*> ("/" *> lowerChar))
 
 main :: IO ()
 main = do
     -- We don't need the commas or newlines to parse the input
-    file <- filter (`notElem` ",\n") <$> readFile "16.txt"
+    file <- readFile "16.txt"
     let ini = V.fromList "abcdefghijklmnop"
     case parseMaybe parseExpr file of
         Just f -> do

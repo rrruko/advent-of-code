@@ -1,90 +1,53 @@
-{-# LANGUAGE OverloadedStrings #-}
-
-module Day18 where
-
-import Data.Vector (Vector)
+import Data.Char (ord)
+import Data.List (elemIndex)
+import Data.Vector ((!), (//), Vector)
 import qualified Data.Vector as V
-import Data.Void
-import Text.Megaparsec
-import Text.Megaparsec.Char
-import Text.Megaparsec.Char.Lexer (decimal)
 
-data Computer = Computer {
-    _ptr :: Int,
-    _registers :: Vector Int,
-    _sound :: Int,
-    _recover :: Int
-} deriving Show
-
-initState :: Computer
-initState = Computer {
-    _ptr = 0,
-    _registers = V.replicate 26 0,
-    _sound = 0,
-    _recover = 0
-}
-
-type Reg = Char
-
-data Arg = R Reg | L Int 
+data State = State
+    (Vector Int) -- ^ Registers
+    Int -- ^ Sound
+    Int -- ^ Recover
+    Int -- ^ Program counter
     deriving Show
 
-data Instruction =
-    Snd Int |
-    Set Reg Arg |
-    Add Reg Arg |
-    Mul Reg Arg |
-    Mod Reg Arg |
-    Rcv Int     |
-    Jgz Arg Arg
-    deriving Show
+initState :: State
+initState = State (V.replicate 26 0) 0 0 0
 
-type Parser = Parsec Void String
+index :: String -> Int
+index c = ord (head c) - ord 'a'
 
-parseInstruction :: Parser Instruction
-parseInstruction = choice
-    [ Snd <$ "snd " <*> int
-    , Set <$ "set " <*> reg <*> (space *> arg)
-    , Add <$ "add " <*> reg <*> (space *> arg)
-    , Mul <$ "mul " <*> reg <*> (space *> arg)
-    , Mod <$ "mod " <*> reg <*> (space *> arg)
-    , Rcv <$ "rcv " <*> int
-    , Jgz <$ "jgz " <*> arg <*> (space *> arg)
-    ]
-
-parseInstructions :: Parser [Instruction]
-parseInstructions = some (parseInstruction <* space)
-
-int :: Parser Int
-int = decimal
-
-reg :: Parser Reg
-reg = oneOf ['a'..'z']
-
-arg :: Parser Arg
-arg = R <$> reg <|> L <$> int
-
-{-
-step :: Computer -> Instruction -> Computer
-step c@(Computer ptr reg snd rcv) ins = 
-    case ins of
-        Snd new -> Computer (ptr+1) reg           new rcv
-        Set t s -> Computer (ptr+1) (set reg t s) snd rcv
-        Add t s -> Computer (ptr+1) (add reg t s) snd rcv
-        Mul t s -> Computer (ptr+1) (mul reg t s) snd rcv
-        Mod t s -> Computer (ptr+1) (mod reg t s) snd rcv
-        Rcv n   -> Computer (ptr+1) reg           snd (if n == 0 then rcv else snd)
-        Jgz t s -> Computer (jgz c t s) reg       snd rcv
--}
-
-part1 :: [Instruction] -> Int
-part1 = undefined
+op :: [String] -> State -> State
+op stmt (State regs snd rcv pc) =
+  State
+    (case stmt of
+        ["set", x, y] -> set regs x (const $ val y)
+        ["add", x, y] -> set regs x (+       val y)
+        ["mul", x, y] -> set regs x (*       val y)
+        ["mod", x, y] -> set regs x (`mod`   val y)
+        _             -> regs)
+    (case stmt of
+        ["snd", x] -> val x
+        _          -> snd)
+    (case stmt of
+        ["rcv", x] | val x > 0 -> snd
+        _                      -> rcv)
+    (case stmt of
+        ["jgz", x, y] | val x > 0 -> pc + val y
+        _                         -> pc + 1)
+    where
+        val :: String -> Int
+        val c
+            | ix <- index c, ix >= 0, ix < 26 = regs ! ix
+            | otherwise = read c
+        set :: Vector Int -> String -> (Int -> Int) -> Vector Int
+        set regs tgt f = regs // [(index tgt, f (val tgt))]
 
 main :: IO ()
 main = do
-    file <- readFile "18.txt"
-    case parseMaybe parseInstructions file of
-        Nothing -> putStrLn "Parse failed."
-        Just instructions -> do
-            putStr $ "Part 1: "
-            print $ part1 instructions
+    file <- lines <$> readFile "18.txt"
+    putStrLn $ "Part 1: " ++ show (compute file initState)
+
+compute :: [String] -> State -> Int
+compute instructions state@(State regs snd rcv pc)
+    | rcv /= 0  = rcv
+    | otherwise = compute instructions (op (words $ instructions !! pc) state)

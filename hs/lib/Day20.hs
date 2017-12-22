@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Lens
 import Data.Function
 import Data.List
 import Data.Maybe
@@ -42,25 +43,25 @@ main = do
     print . fst . closestToOrigin $ map (\p -> iterate step p !! 1000) $ zip [0..] particles
     print . length $ findCollisions particles
 
--- yikes lol
 collides :: Particle -> Particle -> Bool
-collides (Particle (V3 px1 py1 pz1) (V3 vx1 vy1 vz1) (V3 ax1 ay1 az1))
-         (Particle (V3 px2 py2 pz2) (V3 vx2 vy2 vz2) (V3 ax2 ay2 az2)) =
-    let collidesX = collidesAx (px1, vx1, ax1) (px2, vx2, ax2)
-        collidesY = collidesAx (py1, vy1, ay1) (py2, vy2, ay2)
-        collidesZ = collidesAx (pz1, vz1, az1) (pz2, vz2, az2)
-    in  case (collidesX, collidesY, collidesZ) of
-            (Just a, Just b, Just c) | a == b && b == c -> True
-            _ -> False
+collides p q = 
+    case collideOn p q <$> V3 _x _y _z of
+        V3 (Just a) (Just b) (Just c) -> a == b && b == c
+        _ -> False
 
--- i don't think this works
 findCollisions :: [Particle] -> [Particle]
 findCollisions xs = [x | x <- xs, collidesAny x xs]
     where collidesAny x xs = any (\e -> e /= x && collides e x) xs
 
+toAxis :: Particle -> Getting c (V3 Int) c -> (c, c, c)
+toAxis (Particle p v a) _lens = (p^._lens, v^._lens, a^._lens)
+
+collideOn :: Particle -> Particle -> Getting Int (V3 Int) Int -> Maybe Int
+collideOn p1 p2 _lens = collideAx (toAxis p1 _lens) (toAxis p2 _lens)
+
 -- The t at which the projections of two 3D particles to an axis collide.
-collidesAx :: (Int, Int, Int) -> (Int, Int, Int) -> Maybe Int
-collidesAx (pos1, vel1, acc1) (pos2, vel2, acc2) =
+collideAx :: (Int, Int, Int) -> (Int, Int, Int) -> Maybe Int
+collideAx (pos1, vel1, acc1) (pos2, vel2, acc2) =
     let a = acc2 - acc1
         b = vel2 - vel1
         c = pos2 - pos1

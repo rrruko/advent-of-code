@@ -1,3 +1,5 @@
+module Day18 where
+
 import Data.Char (ord)
 import Data.List (elemIndex)
 import Data.Vector ((!), (//), Vector)

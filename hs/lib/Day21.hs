@@ -1,6 +1,9 @@
 module Day21 where
 
+import Control.Monad
 import Data.List (subsequences, transpose)
+import Data.List.Split
+import Data.Maybe
 import Data.Monoid
 
 type Matrix = [String]
@@ -21,6 +24,12 @@ initial =
 perms :: Matrix -> [Matrix]
 perms = mapM (appEndo . foldMap Endo) $
     subsequences [reverse, map reverse, transpose]
+
+rule :: String -> Matrix -> Maybe Matrix
+rule str mat
+    | from `elem` perms mat = Just to
+    | otherwise = Nothing
+    where [from, to] = splitOn "/" <$> splitOn " => " str
 
 -- Show that perms works
 main :: IO ()
